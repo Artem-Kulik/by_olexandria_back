@@ -16,11 +16,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using by_olexandria_back.Models.Entities;
-using by_olexandria_back.Models.Configuration.Interfaces;
 using by_olexandria_back.Models.Configuration;
 using by_olexandria_back.Services.Interfaces;
 using by_olexandria_back.Services.Inplementation;
 using by_olexandria_back.Helpers;
+using by_olexandria_back.Models.Configuration.Initializers;
 
 namespace by_olexandria_back
 {
@@ -52,8 +52,6 @@ namespace by_olexandria_back
 
             services.AddTransient<IJwtTokenService, JwtTokenService>();
 
-            services.AddScoped<IEntityInitializer, EntityInitializer>();
-
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("SecretPhrase")));
             services.AddAuthentication(options =>
             {
@@ -77,7 +75,7 @@ namespace by_olexandria_back
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationContext context)
         {
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             if (env.IsDevelopment())
@@ -98,7 +96,9 @@ namespace by_olexandria_back
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });                        
+            });
+
+            app.Init(context);
         }
     }
 }
